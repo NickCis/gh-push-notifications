@@ -21,15 +21,55 @@ function resolve(text) {
   if (text.match(/^https?:\/\/./))
     return text;
   return `${self.location.protocol}//${self.location.host}/${text}`;
-
 }
 
-messaging.setBackgroundMessageHandler(payload => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationOptions = {
-    body: payload.data.body,
-    icon: resolve(payload.data.icon || 'push-icon.png'),
-  };
+function resolveObject(options) {
+  return Object.keys(options)
+    .reduce((opt, key) => {
+      const hasTransformed = Object.keys(transformKeys)
+        .some(transformKey => {
+          if (key.startsWith(transformKey)) {
+            opt[key.substring(transformKey.length)] = transformKeys[transformKey](options[key]);
+            return true;
+          }
 
-  return self.registration.showNotification(payload.data.title, notificationOptions);
+          return false;
+        });
+
+      if (! hasTransformed)
+        opt[key] = options[key];
+
+      return opt;
+    }, {});
+}
+
+const transformKeys = {
+  'resolve-': resolve,
+  'object-': resolveObject,
+  'parse-object-': str => resolveObject(JSON.parse(str)),
+  'array-': arr => arr.map(resolveObject),
+};
+
+messaging.setBackgroundMessageHandler(payload => {
+  const data = resolveObject(payload.data);
+  data.options.data = data;
+
+  return self.registration.showNotification(data.title, data.options);
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+
+  const data = event.notification.data;
+  const link = data.links[event.action] || data.link;
+
+  if (!link.type)
+    return event.waitUntil(clients.openWindow(link));
+
+  switch (link.type) {
+    case 'fetch':
+      return event.waitUntil(fetch(link.href));
+    default:
+      return event.waitUntil(clients.openWindow(link.href));
+  }
 });

@@ -15,10 +15,19 @@ async function process(doc) {
           .send({
             data: {
               title: notification.subject.title,
-              icon: 'push-icon.png',
-              body: `${notification.subject.type} in ${notification.repository.full_name}`,
-              click_action: 'nada',
-              // click_action:  notification.subject.latest_comment_url || notification.subject.url,
+              link:  'https://github.com/notifications', // TODO:
+              'parse-object-links': JSON.stringify({
+                'mark-as-read': 'https://github.com/notifications', // TODO:
+                'see-notifications': 'https://github.com/notifications',
+              }),
+              'parse-object-options': JSON.stringify({
+                'resolve-icon': 'push-icon.png',
+                body: `${notification.subject.type} in ${notification.repository.full_name}`,
+                actions: [
+                  { action: 'mark-as-read', title: 'Mark as read' },
+                  { action: 'see-notifications', title: 'See notifications' },
+                ],
+              }),
             },
             token: device
           })

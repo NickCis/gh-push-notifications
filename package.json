@@ -6,7 +6,8 @@
     "build": "razzle build",
     "test": "razzle test --env=jsdom",
     "start:prod": "NODE_ENV=production node build/server.js",
-    "now-start": "yarn start:prod"
+    "now-start": "yarn start:prod",
+    "deploy": "yarn now --public && yarn now alias"
   },
   "author": "Nicolas Cisco <ncis20@gmail.com>",
   "license": "MIT",
