@@ -17,3 +17,6 @@ public/static
 /serviceAccountKey.json
 /*.pem
 /*.crt
+/*.csr
+/*.cnf
+/*.srl
