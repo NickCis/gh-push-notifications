@@ -68,7 +68,7 @@ self.addEventListener('notificationclick', event => {
 
   switch (link.type) {
     case 'fetch':
-      return event.waitUntil(fetch(link.href));
+      return event.waitUntil(fetch(link.href, link.options));
     default:
       return event.waitUntil(clients.openWindow(link.href));
   }
